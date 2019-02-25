@@ -1,0 +1,1 @@
+waitress-serve --call %1:create_app
