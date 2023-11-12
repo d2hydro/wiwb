@@ -1,3 +1,15 @@
+Metadata-Version: 2.1
+Name: wiwb
+Version: 2023.1.0
+Summary: Python API to work with WIWB
+Author-email: Daniel Tollenaar <daniel@d2hydro.nl>, Renier Kramer <renier.Kramer@hdsr.nl>
+License: MIT
+Project-URL: Source, https://github.com/d2hydro/wiwb
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Provides-Extra: tests
+License-File: LICENSE
+
 # WIWB API
 A Python API on the WIWB API
 
