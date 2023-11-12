@@ -6,6 +6,7 @@ from wiwb import api_calls
 
 API_URL = "https://wiwb.hydronet.com/api"
 
+
 @dataclass
 class Api:
     """Python API for WIWB service."""
@@ -17,18 +18,18 @@ class Api:
         if self.auth is None:
             self.auth = Auth()
         if self.base_url is None:
-            raise ValueError(f"Provide a valid base_url. Current value is {self.base_url}")
+            raise ValueError(
+                f"Provide a valid base_url. Current value is {self.base_url}"
+            )
 
     def get_data_sources(self, **kwargs):
         api_call = api_calls.GetDataSources(
-            base_url = self.base_url,
-            auth = self.auth,
-            **kwargs)
+            base_url=self.base_url, auth=self.auth, **kwargs
+        )
         return api_call.run()
 
     def get_variables(self, **kwargs):
         api_call = api_calls.GetVariables(
-            base_url = self.base_url,
-            auth = self.auth,
-            **kwargs)
+            base_url=self.base_url, auth=self.auth, **kwargs
+        )
         return api_call.run()

@@ -6,10 +6,13 @@ from datetime import datetime, timedelta
 import requests
 import jwt
 
-AUTH_URL = "https://login.hydronet.com/auth/realms/hydronet/protocol/openid-connect/token"
+AUTH_URL = (
+    "https://login.hydronet.com/auth/realms/hydronet/protocol/openid-connect/token"
+)
 
 CLIENT_ID = os.getenv("wiwb_client_id")
 CLIENT_SECRET = os.getenv("wiwb_client_secret")
+
 
 @dataclass
 class Auth:
@@ -52,12 +55,12 @@ class Auth:
         if self.client_id is None:
             raise ValueError(
                 f"Invalid 'client_id': '{self.client_id}'. Provide at init or specify 'wiwb_client_id' as os environment variable"
-                )
-    
+            )
+
         if self.client_secret is None:
             raise ValueError(
                 f"Invalid 'client_secret':  '{self.client_secret}'. Provide at init or specify 'wiwb_client_id' as os environment variable"
-                )
+            )
 
         # get a token to get started
         self.get_token()
@@ -73,7 +76,7 @@ class Auth:
     def token_valid(self) -> bool:
         """Check if current token is still valid."""
         token_decoded = jwt.decode(self._token, options={"verify_signature": False})
-        token_exp_datetime = datetime.utcfromtimestamp(token_decoded['exp'])
+        token_exp_datetime = datetime.utcfromtimestamp(token_decoded["exp"])
         current_datetime = datetime.utcnow() - timedelta(minutes=1)
         return current_datetime > token_exp_datetime
 
@@ -82,20 +85,20 @@ class Auth:
         """Headers for WIWB API requests"""
         return {
             "content-type": "application/json",
-            "Authorization": "Bearer " + self.token
-            }
+            "Authorization": "Bearer " + self.token,
+        }
 
     def get_token(self) -> str:
         """Get, and store, a fresh WIWB access token"""
         response = requests.post(
             self.url,
-            headers = {"Content-Type":"application/x-www-form-urlencoded"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
             data={
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "grant_type": "client_credentials"
-                }
-                )
+                "grant_type": "client_credentials",
+            },
+        )
         if response.ok:
             self._token = response.json()["access_token"]
         else:
