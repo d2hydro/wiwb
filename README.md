@@ -17,7 +17,7 @@ from wiwb import Auth, Api
 from wiwb.api_calls import GetGrids
 ```
 
-## Find sources
+## Get sources
 
 Find data_sources. You'll notice `Meteobase.Precipitation` being one of them
 
@@ -25,7 +25,7 @@ Find data_sources. You'll notice `Meteobase.Precipitation` being one of them
 data_sources = api.get_data_sources()
 ```
 
-## Find variables
+## Get variables
 Find variables under `Meteobase.Precipitation`. You'll notice `P` being the only variable:
 
 ```
@@ -34,7 +34,7 @@ variables = api.get_variables(
     )
 ```
 
-## Get rasters
+## Get grids
 We'll specify a download for WIWB MeteoBase Precipitation. If we don't specify a `bounds` or `geometries`, `GetGrids` will be set for the extent of Water Authority HDSR.
 
 ```
