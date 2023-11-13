@@ -60,6 +60,7 @@ Let's sample the grids. We'll first make some geometries and assign it to `grids
 
 ```
 from geopandas import GeoSeries
+from shapely.geometry import Point, box
 
 LL_POINT = Point(119865,449665)
 UR_POINT = Point(127325,453565)
