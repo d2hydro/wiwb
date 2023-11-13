@@ -1,5 +1,11 @@
 # WIWB API
-A Python API on the WIWB API
+A Python API on the WIWB API. It includes:
+- authorization
+- get `datasources`
+- get `variables`
+- get `grids`
+- sample `grids` to a set of geometries (points and/or polygons)
+
 
 ## Getting started
 Request a wiwb client-id and client-secret. Provide them as `wiwb_client_id` and `wiwb_client_secret` os environment variables for your convenience. Alternatively it can be specified at init.
