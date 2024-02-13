@@ -13,3 +13,6 @@ coverage.xml
 .coverage
 .coverage.*
 .pytest_cache/
+scripts/*
+wiwb.egg-info/*
+*.cmd

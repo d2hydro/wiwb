@@ -24,6 +24,10 @@ dynamic = ["version"]
 [project.optional-dependencies]
 tests = ["pytest"]
 
+[tool.flake8]
+max-line-length = 120
+max-complexity = 10
+
 [tool.setuptools]
 zip-safe = true
 

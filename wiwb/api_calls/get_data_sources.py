@@ -1,6 +1,6 @@
+import requests
 import logging
 from typing import List, Dict
-import requests
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field
 

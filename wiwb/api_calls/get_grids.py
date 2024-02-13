@@ -4,9 +4,7 @@ from dataclasses import dataclass, field
 from typing import List, Tuple, Union
 from collections.abc import Iterable
 from geopandas import GeoSeries
-from shapely.geometry import Point, Polygon
-from datetime import date, timedelta
-import logging
+from datetime import date
 import pandas as pd
 from wiwb.converters import snake_to_pascal_case
 import pyproj
@@ -89,14 +87,14 @@ class Extent:
         # alter bounds
         if self.width < min_width_height:
             logger.warning(
-                f"""Width of bounds < min_width ({self.width < min_width_height}). {self.xll} and {self.xur} will be adjusted"""
+                f"""Width of bounds < min_width ({self.width < min_width_height}). {self.xll} and {self.xur} will be adjusted"""  # noqa:E501
             )
             self.xll -= (min_width_height - self.width) / 2
             self.xur += (min_width_height - self.width) / 2
 
         if self.height < min_width_height:
             logger.warning(
-                f"""Height of bounds < min_height ({self.height < min_width_height}). {self.yll} and {self.yur} will be adjusted"""
+                f"""Height of bounds < min_height ({self.height < min_width_height}). {self.yll} and {self.yur} will be adjusted"""  # noqa:E501
             )
             self.yll -= (min_width_height - self.height) / 2
             self.yur += (min_width_height - self.height) / 2
@@ -247,9 +245,7 @@ class GetGrids(Request):
                 i.geom_type in IMPLEMENTED_GEOMETRY_TYPES for i in self.geometries
             ):
                 raise ValueError(
-                    f"""
-                                Only geometries of type {IMPLEMENTED_GEOMETRY_TYPES} are allowed. Got types {list(set(self.geometries.geom_type))}
-                                """
+                    f"Only geometries of type {IMPLEMENTED_GEOMETRY_TYPES} are allowed. Got types {list(set(self.geometries.geom_type))}"  # noqa:E501
                 )
             self.bounds = tuple(self.geometries.total_bounds)
         else:

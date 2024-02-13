@@ -1,7 +1,6 @@
-import requests
 from wiwb import Auth
-from dataclasses import dataclass, field
-from typing import Union, List
+from dataclasses import dataclass
+from typing import Union
 from wiwb import api_calls
 
 API_URL = "https://wiwb.hydronet.com/api"

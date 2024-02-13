@@ -2,9 +2,9 @@
 from dataclasses import dataclass, field
 import os
 from typing import Union
-from datetime import datetime, timedelta
-import requests
+from datetime import datetime, timedelta, UTC
 import jwt
+import requests
 
 AUTH_URL = (
     "https://login.hydronet.com/auth/realms/hydronet/protocol/openid-connect/token"
@@ -54,12 +54,12 @@ class Auth:
         # check if client_id and client_secret are valid
         if self.client_id is None:
             raise ValueError(
-                f"Invalid 'client_id': '{self.client_id}'. Provide at init or specify 'wiwb_client_id' as os environment variable"
+                f"Invalid 'client_id': '{self.client_id}'. Provide at init or specify 'wiwb_client_id' as os environment variable"  # noqa:E501
             )
 
         if self.client_secret is None:
             raise ValueError(
-                f"Invalid 'client_secret':  '{self.client_secret}'. Provide at init or specify 'wiwb_client_id' as os environment variable"
+                f"Invalid 'client_secret':  '{self.client_secret}'. Provide at init or specify 'wiwb_client_id' as os environment variable"  # noqa:E501
             )
 
         # get a token to get started
@@ -76,9 +76,11 @@ class Auth:
     def token_valid(self) -> bool:
         """Check if current token is still valid."""
         token_decoded = jwt.decode(self._token, options={"verify_signature": False})
-        token_exp_datetime = datetime.utcfromtimestamp(token_decoded["exp"])
-        current_datetime = datetime.utcnow() - timedelta(minutes=1)
-        return current_datetime > token_exp_datetime
+        token_exp_datetime = datetime.fromtimestamp(token_decoded["exp"], UTC)
+        # token_exp_datetime = datetime.utcfromtimestamp(token_decoded["exp"])
+        current_datetime = datetime.now(UTC) - timedelta(minutes=1)
+        # current_datetime = datetime.utcnow() - timedelta(minutes=1)
+        return current_datetime < token_exp_datetime
 
     @property
     def headers(self) -> dict:

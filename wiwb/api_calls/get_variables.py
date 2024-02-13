@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 import requests
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field
