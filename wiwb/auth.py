@@ -1,18 +1,12 @@
 """Authorization for the WIWB API"""
 
 from dataclasses import dataclass, field
-import os
+
 from typing import Union
 from datetime import datetime, timedelta, UTC
 import jwt
 import requests
-
-AUTH_URL = (
-    "https://login.hydronet.com/auth/realms/hydronet/protocol/openid-connect/token"
-)
-
-CLIENT_ID = os.getenv("wiwb_client_id")
-CLIENT_SECRET = os.getenv("wiwb_client_secret")
+from wiwb.globals import AUTH_URL, CLIENT_ID, CLIENT_SECRET
 
 
 @dataclass

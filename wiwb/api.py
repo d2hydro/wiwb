@@ -2,8 +2,7 @@ from wiwb import Auth
 from dataclasses import dataclass
 from typing import Union
 from wiwb import api_calls
-
-API_URL = "https://wiwb.hydronet.com/api"
+from wiwb.globals import API_URL
 
 
 @dataclass
@@ -32,3 +31,9 @@ class Api:
             base_url=self.base_url, auth=self.auth, **kwargs
         )
         return api_call.run()
+
+    def get_grids(self, **kwargs):
+        get_grids = api_calls.GetVariables(
+            base_url=self.base_url, auth=self.auth, **kwargs
+        )
+        return get_grids

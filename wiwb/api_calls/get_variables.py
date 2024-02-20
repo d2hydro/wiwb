@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class GetVariables(Request):
+    """GetVariables request"""
+
     data_source_codes: List[str] = field(default_factory=list)
     variable_codes: List[str] = field(default_factory=list)
 

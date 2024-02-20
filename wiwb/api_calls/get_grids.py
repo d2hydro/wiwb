@@ -1,47 +1,46 @@
+# %%
 import logging
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field
-from typing import Iterable, List, Tuple, Union, Optional
-from collections.abc import Iterable
+from typing import Iterable, List, Tuple, Union, Literal
 from geopandas import GeoSeries
 from shapely.geometry import Point, Polygon, MultiPolygon
 from datetime import date
-import pandas as pd
 from wiwb.converters import snake_to_pascal_case
 import pyproj
 import requests
 from wiwb.sample import sample_netcdf
 from pathlib import Path
 import tempfile
-import xarray
-
-
-FILE_SUFFICES = {
-    "geotiff": "zip",
-    "aaigrid": "hdf5",
-    "hdf5": "hdf5",
-    "netcdf4.cf1p6": "nc",
-    "netcdf4.cf1p6.zip": "zip",
-}
-
-TIME_INTERVAL = ["Days", "Hours", "Minutes"]
-
-DEFAULT_BOUNDS = (109950, 438940, 169430, 467600)
-DEFAULT_CRS = 28992
-IMPLEMENTED_GEOMETRY_TYPES = [Point, Polygon, MultiPolygon]
+from wiwb.globals import get_defaults, FILE_SUFFICES
 
 logger = logging.getLogger(__name__)
+defaults = get_defaults()
 
 
 @dataclass
 class Extent:
-    """Extent for Settings in request body."""
+    f"""Extent for Settings in request body.
 
-    xll: float = DEFAULT_BOUNDS[0]
-    yll: float = DEFAULT_BOUNDS[1]
-    xur: float = DEFAULT_BOUNDS[2]
-    yur: float = DEFAULT_BOUNDS[3]
-    epsg: int = DEFAULT_CRS
+    Parameters
+    ----------
+    xll : float
+        The x-coordinate of the lower-left corner of the extent. Defaults to {defaults.bounds[0]}.
+    yll : float
+        The y-coordinate of the lower-left corner of the extent. Defaults to {defaults.bounds[1]}.
+    xur : float
+        The x-coordinate of the upper-right corner of the extent. Defaults to {defaults.bounds[2]}.
+    yur : float
+        The y-coordinate of the upper-right corner of the extent. Defaults to {defaults.bounds[3]}.
+    epsg : int
+        The EPSG code representing the coordinate reference system (CRS) of the extent. Defaults to {defaults.crs}
+    """
+
+    xll: float = defaults.bounds[0]
+    yll: float = defaults.bounds[1]
+    xur: float = defaults.bounds[2]
+    yur: float = defaults.bounds[3]
+    epsg: int = defaults.crs
 
     def __post_init__(self):
         if self.width <= 0:
@@ -109,9 +108,25 @@ class Extent:
 
 @dataclass
 class Interval:
-    """Interval for Settings in request body."""
+    """Interval for Settings in request body.
 
-    type: str
+    Parameters
+    ----------
+    type : str
+        The interval, either "Days", "Hours", "Minutes"
+    value: int
+        Increment of the interval
+
+    Example
+    -------
+
+    Interval(type="Hours", value=2)
+
+    Is an interval of 2 hours.
+
+    """
+
+    type: Literal["Days", "Hours", "Minutes"]
     value: int
 
     def json(self):
@@ -120,6 +135,22 @@ class Interval:
 
 @dataclass
 class ReaderSettings:
+    """WIWB reader-settings
+
+    Parameters
+    ----------
+    start_date: datetime.date
+        Reader start_date
+    end_date: datetime.date
+        Reader end_date
+    variable_codes: List[str]
+        List of WIWB variable codes
+    interval: Interval
+        time-interval for reader
+    extent: Extend
+        extent for reader
+    """
+
     start_date: date
     end_date: date
     variable_codes: list
@@ -141,6 +172,16 @@ class ReaderSettings:
 
 @dataclass
 class Reader:
+    """WIWB reader
+
+    Parameters
+    ----------
+    data_source_code: str
+        WIWB datasourcecode to read
+    settings: Settings
+        WIWB reader settings
+    """
+
     data_source_code: str
     settings: Union[ReaderSettings, None] = field(default_factory=ReaderSettings)
 
@@ -153,11 +194,31 @@ class Reader:
 
 @dataclass
 class ExporterSettings:
+    """WIWB export settings
+
+    Parameters
+    ----------
+    export_projection_file: bool, optional
+        To write a projection file (in case of ASCII Grid). Default is False
+
+    """
+
     export_projection_file = False
 
 
 @dataclass
 class Exporter:
+    """WIWB exporter
+
+    Parameters
+    ----------
+    data_format_code: str, optional
+        data-format code to export data to. Defaults to geotiff
+    settings: ExporterSettings
+        WIWB exporter settings
+
+    """
+
     data_format_code: str = "geotiff"
     settings: Union[ExporterSettings, None] = None
 
@@ -171,6 +232,8 @@ class Exporter:
 
 @dataclass
 class RequestBody:
+    """GetGrids request Body"""
+
     readers: List[Reader]
     exporter: Exporter
 
@@ -183,6 +246,8 @@ class RequestBody:
 
 @dataclass
 class GetGrids(Request):
+    """GetGrids request"""
+
     data_source_code: str
     variable_code: str
     start_date: date
@@ -191,12 +256,12 @@ class GetGrids(Request):
     interval: Tuple[str, int] = ("Hours", 1)
     data_format_code: str = "geotiff"
     epsg: Union[int, None] = (
-        DEFAULT_CRS  # epsg always before geometries so crs can be alligned
+        defaults.crs  # epsg always before geometries so crs can be alligned
     )
     geometries: GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]] | None = (
         None  # geometries always before bounds
     )
-    bounds: Union[Tuple[float, float, float, float], None] = DEFAULT_BOUNDS
+    bounds: Union[Tuple[float, float, float, float], None] = defaults.bounds
     _response: Union[requests.Response, None] = None
 
     # handles specific preperation of properties
@@ -287,13 +352,13 @@ class GetGrids(Request):
             epsg = self.epsg
 
         if geoseries is not None:
-            ## if no epsg, but geometries, we set crs from geometries
+            # if no epsg, but geometries, we set crs from geometries
             if (epsg is None) and (geoseries.crs is not None):
                 epsg = geoseries.crs.to_epsg()
-            ## if epsg, but geometries.crs, we set geometries.crs from crs
+            # if epsg, but geometries.crs, we set geometries.crs from crs
             elif (epsg is not None) and (geoseries.crs is None):
                 geoseries.crs = epsg
-            ## if epsg and geometries.crs we reproject geometies to epsg
+            # if epsg and geometries.crs we reproject geometies to epsg
             elif (epsg is not None) and (geoseries.crs is not None):
                 geoseries = geoseries.to_crs(epsg)
             else:

@@ -68,7 +68,7 @@ def sample_netcdf(
     """
     # read temp-source for sampling
     with xarray.open_dataset(nc_file, engine="netcdf4") as ds:
-        if (not start_date is None) and (not end_date is None):
+        if (start_date is not None) and (end_date is not None):
             ds = ds.sel(time=slice(start_date, end_date))
         nodata = ds[variable_code].attrs.get("_FillValue")
         affine = ds.rio.transform()

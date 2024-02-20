@@ -1,27 +1,20 @@
 import requests
 import logging
-from typing import List, Dict
+from typing import Dict
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field
-
+from wiwb.globals import PRIMARY_STRUCTURE_TYPES
 
 logger = logging.getLogger(__name__)
-
-PRIMARY_STRUCTURE_TYPES = [
-    "EnsembleGrid",
-    "EnsembleTimeSeries",
-    "Event",
-    "Grid",
-    "ModelGrid",
-    "ModelTimeSeries",
-    "TimeSeries",
-]
 
 
 @dataclass
 class GetDataSources(Request):
-    # FIXME: let's go for Python >= 3.8 and use typing.Literal
-    primary_structure_types: List[str] = field(default_factory=lambda: ["Grid"])
+    """GetDataSources request"""
+
+    primary_structure_types: PRIMARY_STRUCTURE_TYPES = field(
+        default_factory=lambda: ["Grid"]
+    )
 
     @property
     def url_post_fix(self) -> str:
