@@ -84,3 +84,29 @@ Now we sample on geometries. We'll write the result to a CSV.
 df = grids.sample()
 df.to_csv("samples.csv")
 ```
+
+## Sample existing netcdf files
+If you have a directory with netcdf-files you can sample them into one DataFrame. You can slice the NetCDFs using a `start_date` and `end_date`.
+
+In the example below we take a set of Van der Sat soil-moisture as example. NeCDFs with one variable are stored in a directory with a variable name. So, netcdfs containing the variable `DRZSM-AMSR2-C1N-DESC-T10_V003_100` are stored in a directory with name `DRZSM-AMSR2-C1N-DESC-T10_V003_100`
+
+```
+from pathlib import Path
+from datetime import date
+
+START_DATE = date(2015, 1, 1)
+END_DATE = date(2015, 1, 2)
+DIR = Path("path_to_netcdf_directory")
+
+# get variables from directory names and take the first
+variables = [i.name for i in DIR.glob(r"*/")]
+variable = variables[0]
+
+# go to the directory with the variable
+dir = DIR.joinpath(variable)
+
+# sample all netcdf's in the directory over the variable
+df = sample_nc_dir(dir, variable, geoseries, start_date=START_DATE, end_date=END_DATE)
+```
+
+

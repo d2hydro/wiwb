@@ -1,15 +1,16 @@
 import logging
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field
-from typing import List, Tuple, Union
+from typing import Iterable, List, Tuple, Union, Optional
 from collections.abc import Iterable
 from geopandas import GeoSeries
+from shapely.geometry import Point, Polygon, MultiPolygon
 from datetime import date
 import pandas as pd
 from wiwb.converters import snake_to_pascal_case
 import pyproj
 import requests
-from wiwb.sample import sample_geoseries
+from wiwb.sample import sample_netcdf
 from pathlib import Path
 import tempfile
 import xarray
@@ -27,7 +28,7 @@ TIME_INTERVAL = ["Days", "Hours", "Minutes"]
 
 DEFAULT_BOUNDS = (109950, 438940, 169430, 467600)
 DEFAULT_CRS = 28992
-IMPLEMENTED_GEOMETRY_TYPES = ["Point", "Polygon", "MultiPolygon"]
+IMPLEMENTED_GEOMETRY_TYPES = [Point, Polygon, MultiPolygon]
 
 logger = logging.getLogger(__name__)
 
@@ -189,15 +190,32 @@ class GetGrids(Request):
     unzip: bool = True
     interval: Tuple[str, int] = ("Hours", 1)
     data_format_code: str = "geotiff"
-    geometries: Union[Iterable, GeoSeries, None] = None
-    epsg: Union[int, None] = DEFAULT_CRS
+    epsg: Union[int, None] = (
+        DEFAULT_CRS  # epsg always before geometries so crs can be alligned
+    )
+    geometries: GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]] | None = (
+        None  # geometries always before bounds
+    )
     bounds: Union[Tuple[float, float, float, float], None] = DEFAULT_BOUNDS
     _response: Union[requests.Response, None] = None
 
+    # handles specific preperation of properties
+    def __setattr__(self, prop, val):
+        if prop == "geometries":
+            val = self._to_geoseries(val)
+        if prop == "epsg":
+            geoseries = self._reproject_geoseries(epsg=val)
+            if geoseries is not None:
+                self.geometries = geoseries
+        if prop == "bounds":
+            val = self._get_bounds(val)
+        super().__setattr__(prop, val)
+
     def __post_init__(self):
-        self.get_bounds()
         if self.epsg is None:
-            raise TypeError("You have to specify 'epsg'")
+            raise ValueError(
+                "epsg can not be None. Specify geometries with crs or set epsg directly"
+            )
 
     @property
     def crs(self):
@@ -236,21 +254,69 @@ class GetGrids(Request):
     def url_post_fix(self) -> str:
         return "grids/get"
 
-    def get_bounds(self):
-        if self.geometries is not None:
-            if not isinstance(self.geometries, GeoSeries):
-                self.geometries = GeoSeries(self.geometries)
+    def _to_geoseries(
+        self,
+        geometries: GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]] | None,
+    ):
 
+        # convert iterable to GeoSeries
+        if geometries is not None:
+            if not isinstance(geometries, GeoSeries):
+                geometries = GeoSeries(geometries)
+
+            # Check if geometries are Point, Polygon, or MultiPolygon
             if not all(
-                i.geom_type in IMPLEMENTED_GEOMETRY_TYPES for i in self.geometries
+                (
+                    i in ["Point", "Polygon", "MultiPolygon"]
+                    for i in geometries.geom_type
+                )
             ):
                 raise ValueError(
-                    f"Only geometries of type {IMPLEMENTED_GEOMETRY_TYPES} are allowed. Got types {list(set(self.geometries.geom_type))}"  # noqa:E501
+                    f"Geometries must be Point, Polygon, or MultiPolygon, got {geometries.geom_type.unique()}"
                 )
-            self.bounds = tuple(self.geometries.total_bounds)
-        else:
-            if self.bounds is None:
-                raise TypeError("""Specify either 'geometries' or 'bounds'.""")
+
+        geometries = self._reproject_geoseries(geoseries=geometries)
+        return geometries
+
+    def _reproject_geoseries(
+        self, geoseries: GeoSeries | None = None, epsg: int | None = None
+    ):
+        if geoseries is None:
+            geoseries = self.geometries
+        if epsg is None:
+            epsg = self.epsg
+
+        if geoseries is not None:
+            ## if no epsg, but geometries, we set crs from geometries
+            if (epsg is None) and (geoseries.crs is not None):
+                epsg = geoseries.crs.to_epsg()
+            ## if epsg, but geometries.crs, we set geometries.crs from crs
+            elif (epsg is not None) and (geoseries.crs is None):
+                geoseries.crs = epsg
+            ## if epsg and geometries.crs we reproject geometies to epsg
+            elif (epsg is not None) and (geoseries.crs is not None):
+                geoseries = geoseries.to_crs(epsg)
+            else:
+                raise ValueError(
+                    "Either specify epsg or provide geoseries with crs. Both are None"
+                )
+
+        return geoseries
+
+    def _get_bounds(self, bounds: Union[Tuple[float, float, float, float], None]):
+        if (
+            self.geometries is not None
+        ):  # if geometries are specified, we'll get bounds from geometries
+            bounds = tuple(self.geometries.total_bounds)
+            if bounds is None:
+                logger.warning(
+                    "bounds will be ignored as long as geometries are not None"
+                )
+        elif bounds is None:  # if geometries aren't specified, user has to set bounds
+            raise ValueError(
+                """Specify either 'geometries' or 'bounds', both are None"""
+            )
+        return bounds
 
     def run(self):
         self._response = None
@@ -270,7 +336,6 @@ class GetGrids(Request):
         return tmp_file_path
 
     def sample(self, stats: Union[str, List[str]] = "mean"):
-        # TODO: check geometry-bounds
         if isinstance(stats, str):
             stats = [stats]
 
@@ -292,41 +357,16 @@ class GetGrids(Request):
         # write content in temp-file
         temp_file = self.write_tempfile()
 
-        # read temp-source for sampling
-        with xarray.open_dataset(
-            temp_file, decode_coords="all", engine="netcdf4"
-        ) as ds:
-            nodata = ds[self.variable_code].attrs.get("_FillValue")
-            affine = ds.rio.transform()
-            data = {
-                time: sample_geoseries(
-                    values=ds[self.variable_code].sel(time=time).values,
-                    geometries=self.geometries,
-                    affine=affine,
-                    nodata=nodata,
-                    stats=stats,
-                )
-                for time in ds["time"].values
-            }
+        # sample temp_file
+        df = sample_netcdf(
+            nc_file=temp_file,
+            variable_code=self.variable_code,
+            geometries=self.geometries,
+            stats=stats,
+            unlink=True,
+        )
 
-        # delete temp-file
-        if temp_file.exists():
-            temp_file.unlink()
-
-        # create columns
-        if len(stats) == 1:
-            columns = self.geometries.index
-        else:
-            if isinstance(self.geometries, list):
-                # TODO: itemsetter, if user sets self.geometries, it should convert to geoseries.
-                geom_index = [i for i in range(0, len(self.geometries))]
-            else:
-                geom_index = self.geometries.index
-            columns = pd.MultiIndex.from_product(
-                iterables=[geom_index, stats], names=["index", "stats"]
-            )
-
-        return pd.DataFrame.from_dict(data, orient="index", columns=columns)
+        return df
 
     def write(self, output_dir: Union[str, Path]):
         """Write response.content to an output-file"""

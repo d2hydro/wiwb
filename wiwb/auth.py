@@ -1,4 +1,5 @@
 """Authorization for the WIWB API"""
+
 from dataclasses import dataclass, field
 import os
 from typing import Union
