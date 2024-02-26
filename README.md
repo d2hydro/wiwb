@@ -5,6 +5,7 @@ A Python API on the WIWB API. It includes:
 - get `variables`
 - get `grids`
 - sample `grids` to a set of geometries (points and/or polygons)
+- sample existing netcdf files to a set of geometries (points and/or polygons)
 
 
 ## Getting started
