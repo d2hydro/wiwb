@@ -5,9 +5,10 @@ dependencies:
   - python<=3.12
   - requests
   - geopandas
+  - black
+  - ipykernel
   - pandas
   - pyjwt
-  - black
   - pytest
   - pytest-cov
   - netcdf4

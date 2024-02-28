@@ -1,8 +1,8 @@
-from wiwb import Auth
+from wiwb.auth import Auth
 from dataclasses import dataclass
 from typing import Union
 from wiwb import api_calls
-from wiwb.globals import API_URL
+from wiwb.constants import API_URL
 
 
 @dataclass

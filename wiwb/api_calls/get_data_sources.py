@@ -3,7 +3,7 @@ import logging
 from typing import Dict
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field
-from wiwb.globals import PRIMARY_STRUCTURE_TYPES
+from wiwb.constants import PRIMARY_STRUCTURE_TYPES
 
 logger = logging.getLogger(__name__)
 

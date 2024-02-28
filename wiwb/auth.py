@@ -6,7 +6,7 @@ from typing import Union
 from datetime import datetime, timedelta, UTC
 import jwt
 import requests
-from wiwb.globals import AUTH_URL, CLIENT_ID, CLIENT_SECRET
+from wiwb.constants import AUTH_URL, CLIENT_ID, CLIENT_SECRET
 
 
 @dataclass

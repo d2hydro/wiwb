@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from wiwb import Auth
+from wiwb.auth import Auth
 
 
 @dataclass

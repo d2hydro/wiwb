@@ -12,7 +12,7 @@ import requests
 from wiwb.sample import sample_netcdf
 from pathlib import Path
 import tempfile
-from wiwb.globals import get_defaults, FILE_SUFFICES
+from wiwb.constants import get_defaults, FILE_SUFFICES
 
 logger = logging.getLogger(__name__)
 defaults = get_defaults()
@@ -354,7 +354,7 @@ class GetGrids(Request):
         if geoseries is not None:
             # if no epsg, but geometries, we set crs from geometries
             if (epsg is None) and (geoseries.crs is not None):
-                epsg = geoseries.crs.to_epsg()
+                self.epsg = geoseries.crs.to_epsg()
             # if epsg, but geometries.crs, we set geometries.crs from crs
             elif (epsg is not None) and (geoseries.crs is None):
                 geoseries.crs = epsg
