@@ -20,7 +20,7 @@ defaults = get_defaults()
 
 @dataclass
 class Extent:
-    f"""Extent for Settings in request body.
+    f"""Extent for Settings in request body in correct epsg: {defaults.crs}.
 
     Parameters
     ----------
@@ -32,15 +32,12 @@ class Extent:
         The x-coordinate of the upper-right corner of the extent. Defaults to {defaults.bounds[2]}.
     yur : float
         The y-coordinate of the upper-right corner of the extent. Defaults to {defaults.bounds[3]}.
-    epsg : int
-        The EPSG code representing the coordinate reference system (CRS) of the extent. Defaults to {defaults.crs}
     """
 
     xll: float = defaults.bounds[0]
     yll: float = defaults.bounds[1]
     xur: float = defaults.bounds[2]
     yur: float = defaults.bounds[3]
-    epsg: int = defaults.crs
 
     def __post_init__(self):
         if self.width <= 0:
@@ -66,6 +63,10 @@ class Extent:
     @property
     def crs(self):
         return pyproj.CRS(self.epsg)
+
+    @property
+    def epsg(self):
+        return defaults.crs
 
     @property
     def spatial_reference(self):
@@ -101,7 +102,6 @@ class Extent:
 
     def json(self):
         dict = self.__dict__.copy()
-        dict.pop("epsg")
         dict["spatial_reference"] = self.spatial_reference
         return {snake_to_pascal_case(k): v for k, v in dict.items()}
 
@@ -255,9 +255,6 @@ class GetGrids(Request):
     unzip: bool = True
     interval: Tuple[str, int] = ("Hours", 1)
     data_format_code: str = "geotiff"
-    epsg: Union[int, None] = (
-        defaults.crs  # epsg always before geometries so crs can be alligned
-    )
     geometries: GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]] | None = (
         None  # geometries always before bounds
     )
@@ -268,19 +265,13 @@ class GetGrids(Request):
     def __setattr__(self, prop, val):
         if prop == "geometries":
             val = self._to_geoseries(val)
-        if prop == "epsg":
-            geoseries = self._reproject_geoseries(epsg=val)
-            if geoseries is not None:
-                self.geometries = geoseries
         if prop == "bounds":
             val = self._get_bounds(val)
         super().__setattr__(prop, val)
 
-    def __post_init__(self):
-        if self.epsg is None:
-            raise ValueError(
-                "epsg can not be None. Specify geometries with crs or set epsg directly"
-            )
+    @property
+    def epsg(self):
+        return defaults.crs
 
     @property
     def crs(self):
@@ -293,7 +284,7 @@ class GetGrids(Request):
             self.end_date,
             [self.variable_code],
             interval=Interval(*self.interval),
-            extent=Extent(*self.bounds, epsg=self.epsg),
+            extent=Extent(*self.bounds),
         )
 
         reader = Reader(self.data_source_code, settings=reader_settings)
@@ -343,29 +334,13 @@ class GetGrids(Request):
         geometries = self._reproject_geoseries(geoseries=geometries)
         return geometries
 
-    def _reproject_geoseries(
-        self, geoseries: GeoSeries | None = None, epsg: int | None = None
-    ):
-        if geoseries is None:
-            geoseries = self.geometries
-        if epsg is None:
-            epsg = self.epsg
-
-        if geoseries is not None:
-            # if no epsg, but geometries, we set crs from geometries
-            if (epsg is None) and (geoseries.crs is not None):
-                self.epsg = geoseries.crs.to_epsg()
-            # if epsg, but geometries.crs, we set geometries.crs from crs
-            elif (epsg is not None) and (geoseries.crs is None):
-                geoseries.crs = epsg
-            # if epsg and geometries.crs we reproject geometies to epsg
-            elif (epsg is not None) and (geoseries.crs is not None):
-                geoseries = geoseries.to_crs(epsg)
-            else:
-                raise ValueError(
-                    "Either specify epsg or provide geoseries with crs. Both are None"
-                )
-
+    def _reproject_geoseries(self, geoseries: GeoSeries | None = None):
+        """Set or reproject geoseries to self.epsg"""
+        if geoseries.crs is None:
+            logger.warning(f"no crs specified in geoseries, will be set to {self.epsg}")
+            geoseries.crs = self.epsg
+        else:
+            geoseries = geoseries.to_crs(self.epsg)
         return geoseries
 
     def _get_bounds(self, bounds: Union[Tuple[float, float, float, float], None]):

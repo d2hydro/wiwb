@@ -15,7 +15,19 @@ Import wiwb Api and Auth. GetGrids is not implemented in the Api module (yet) so
 
 ```
 from wiwb import Auth, Api
-from wiwb.api_calls import GetGrids
+```
+
+If you have provided os environment variables, you do not have to specify your `client_id` and `client_secret` init your Api as:
+
+```
+api = Api()
+```
+
+If you didn't you have to initialize auth manually. Your code looks like:
+
+```
+auth = Auth(client_id="your-client-id", client_secret="your-client-secret")
+api = Api(auth=auth)
 ```
 
 ## Get sources
@@ -39,7 +51,7 @@ variables = api.get_variables(
 We'll specify a download for WIWB MeteoBase Precipitation. If we don't specify a `bounds` or `geometries`, `GetGrids` will be set for the extent of Water Authority HDSR.
 
 ```
-grids = GetGrids(
+grids = api.GetGrids(
     auth=auth,
     base_url=api.base_url,
     data_source_code="Meteobase.Precipitation",

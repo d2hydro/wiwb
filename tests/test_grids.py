@@ -52,21 +52,3 @@ def test_reproject(auth, api, geoseries):
     )
 
     assert grids.geometries.crs.to_epsg() == 28992
-
-    # assume we have no crs in geometries and no epsg provided, this should raise a ValueError
-    geoseries.crs = None
-    try:
-        grids = GetGrids(
-            auth=auth,
-            base_url=api.base_url,
-            data_source_code="Meteobase.Precipitation",
-            variable_code="P",
-            start_date=date(2018, 1, 1),
-            end_date=date(2018, 1, 2),
-            data_format_code="netcdf4.cf1p6",
-            geometries=geoseries,
-            epsg=None,
-        )
-        assert False
-    except ValueError:
-        assert True
