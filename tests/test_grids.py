@@ -2,7 +2,7 @@ from wiwb.api_calls import GetGrids
 from datetime import date
 
 
-def test_grids(auth, api, tmp_path, geoseries):
+def test_grids(auth, api, tmp_path, geoseries, grids_df):
     """
     note WIWB does guarantee you get all data within bounds. Therefore other_point will be outside
     bounds and result is None :-(
@@ -20,8 +20,13 @@ def test_grids(auth, api, tmp_path, geoseries):
     )
 
     df = grids.sample()
+
+    # check if we have results and if they are as expected
     assert not df.empty
-    grids.write(tmp_path)
+    assert (df * 100).astype(int).equals(grids_df)
+
+    # check write to disck
+    grids.to_directory(tmp_path)
     assert tmp_path.joinpath(
         "Meteobase.Precipitation_P_2018-01-01_2018-01-02.nc"
     ).exists()
@@ -51,4 +56,4 @@ def test_reproject(auth, api, geoseries):
         geometries=geoseries,
     )
 
-    assert grids.geometries.crs.to_epsg() == 28992
+    assert grids.geoseries.crs.to_epsg() == 28992

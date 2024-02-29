@@ -65,7 +65,7 @@ grids = api.GetGrids(
 We can write the grids to an output directory. If we don't call `grids.run()` before, it will first request the data at WIWB:
 
 ```
-grids.write(output_dir="")
+grids.to_directory(output_dir="")
 ```
 
 ## Sample grids
@@ -88,7 +88,7 @@ GEOSERIES = GeoSeries(
      crs=28992
      )
 
-grids.geometries = GEOSERIES
+grids.set_geometries(GEOSERIES)
 ```
 
 Now we sample on geometries. We'll write the result to a CSV.
@@ -122,4 +122,13 @@ dir = DIR.joinpath(variable)
 df = sample_nc_dir(dir, variable, geoseries, start_date=START_DATE, end_date=END_DATE)
 ```
 
+If you wish to specify a list of NetCDF files rather than a directory, you can use:
 
+```
+nc_files = [
+    "DRZSM-AMSR2-C1N-DESC-T10_V003_100_2015-01-01T000000_4.040000_52.240000_5.600000_51.300000.nc",
+    "DRZSM-AMSR2-C1N-DESC-T10_V003_100_2015-01-02T000000_4.040000_52.240000_5.600000_51.300000.nc"
+    ]
+
+df = sample_nc_dir(nc_files, variable, geoseries, start_date=START_DATE, end_date=END_DATE)
+```
