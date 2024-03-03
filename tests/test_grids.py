@@ -1,3 +1,4 @@
+# %%
 from wiwb.api_calls import GetGrids
 from datetime import date
 
@@ -57,3 +58,31 @@ def test_reproject(auth, api, geoseries):
     )
 
     assert grids.geoseries.crs.to_epsg() == 28992
+
+
+def test_bounds(auth, api, defaults):
+    # init grids without bounds, should result in default bounds
+    grids = GetGrids(
+        auth=auth,
+        base_url=api.base_url,
+        data_source_code="Meteobase.Precipitation",
+        variable_code="P",
+        start_date=date(2018, 1, 1),
+        end_date=date(2018, 1, 2),
+        data_format_code="netcdf4.cf1p6",
+    )
+
+    assert grids.bbox == defaults.bounds
+
+    # setting bounds to None should result in ValueError ("Specify either 'geometries' or 'bounds', both are None")
+    try:
+        grids.set_bounds(None)
+        assert False
+    except ValueError:
+        assert True
+
+    # setting geometries
+    grids.set_geometries(defaults.geoseries)
+    grids.set_bounds(None)
+
+    assert grids.bbox == tuple(defaults.geoseries.total_bounds)

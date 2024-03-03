@@ -5,7 +5,7 @@ from geopandas import GeoSeries
 from pandas import DataFrame
 from pathlib import Path
 import pandas as pd
-from wiwb.constants import GEOSERIES
+from wiwb.constants import GEOSERIES, get_defaults
 
 DIR = Path(__file__).parent.joinpath("data")
 
@@ -23,6 +23,11 @@ def auth() -> Auth:
 @pytest.fixture
 def geoseries() -> GeoSeries:
     return GEOSERIES
+
+
+@pytest.fixture
+def defaults():
+    return get_defaults()
 
 
 @pytest.fixture
