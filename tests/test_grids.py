@@ -1,6 +1,7 @@
 # %%
 from wiwb.api_calls import GetGrids
 from datetime import date
+import pytest
 
 
 def test_grids(auth, api, tmp_path, geoseries, grids_df):
@@ -75,11 +76,10 @@ def test_bounds(auth, api, defaults):
     assert grids.bbox == defaults.bounds
 
     # setting bounds to None should result in ValueError ("Specify either 'geometries' or 'bounds', both are None")
-    try:
+    with pytest.raises(
+        ValueError, match="Specify either 'geometries' or 'bounds', both are None"
+    ):
         grids.set_bounds(None)
-        assert False
-    except ValueError:
-        assert True
 
     # setting geometries
     grids.set_geometries(defaults.geoseries)
