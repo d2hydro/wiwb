@@ -1,7 +1,7 @@
 import logging
 from wiwb.api_calls import Request
 from dataclasses import dataclass, field, InitVar
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Tuple, Union, Optional
 from geopandas import GeoSeries
 from pandas import DataFrame
 from shapely.geometry import Point, Polygon, MultiPolygon
@@ -322,7 +322,7 @@ class GetGrids(Request):
         return RequestBody(readers=[reader], exporter=exporter)
 
     @property
-    def bounds(self):  # noqa:F811
+    def bbox(self):  # noqa:F811
         return self._bounds
 
     @property
@@ -348,8 +348,8 @@ class GetGrids(Request):
 
     def _to_geoseries(
         self,
-        geometries: GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]] | None,
-    ):
+        geometries: Optional[GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]],
+    ) -> GeoSeries:
 
         # convert iterable to GeoSeries
         if geometries is not None:
@@ -370,7 +370,7 @@ class GetGrids(Request):
         geometries = self._reproject_geoseries(geoseries=geometries)
         return geometries
 
-    def _reproject_geoseries(self, geoseries: GeoSeries | None = None):
+    def _reproject_geoseries(self, geoseries: GeoSeries) -> GeoSeries:
         """Set or reproject geoseries to self.epsg"""
         if geoseries.crs is None:
             logger.warning(f"no crs specified in geoseries, will be set to {self.epsg}")
@@ -404,7 +404,8 @@ class GetGrids(Request):
             self._response.raise_for_status()
 
     def set_geometries(
-        self, geometries: GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]
+        self,
+        geometries: Optional[GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]],
     ) -> GeoSeries:
         """Set a list or GeoSeries with Point, Polygon or MultiPolygon values. Handles conversion to
         GeoSeries and reprojection
@@ -420,8 +421,11 @@ class GetGrids(Request):
             GeoSeries set to GetGrids
         """
 
-        geoseries = self._to_geoseries(geometries)
-        self._geoseries = geoseries
+        if geometries is not None:
+            geoseries = self._to_geoseries(geometries)
+            self._geoseries = geoseries
+        else:
+            self._geoseries = geometries
         return self.geoseries
 
     def set_bounds(
