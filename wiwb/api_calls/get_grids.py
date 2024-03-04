@@ -406,7 +406,7 @@ class GetGrids(Request):
     def set_geometries(
         self,
         geometries: Optional[GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]],
-    ) -> GeoSeries:
+    ) -> None:
         """Set a list or GeoSeries with Point, Polygon or MultiPolygon values. Handles conversion to
         GeoSeries and reprojection
 
@@ -414,23 +414,14 @@ class GetGrids(Request):
         ----------
         geometries : GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]
             A list or GeoSeries with Point, Polygon and Multipolygon objects
-
-        Returns
-        -------
-        GeoSeries
-            GeoSeries set to GetGrids
         """
-
         if geometries is not None:
             geoseries = self._to_geoseries(geometries)
             self._geoseries = geoseries
         else:
             self._geoseries = geometries
-        return self.geoseries
 
-    def set_bounds(
-        self, bounds: Tuple[float, float, float, float]
-    ) -> Tuple[float, float, float, float]:
+    def set_bounds(self, bounds: Tuple[float, float, float, float]) -> None:
         """Set new bounds values. Fits bounds to geoseries.bounds
 
         Parameters
@@ -438,15 +429,10 @@ class GetGrids(Request):
         bounds : Tuple[float, float, float, float]
             Bounds tuple
 
-        Returns
-        -------
-        Tuple[float, float, float, float]
-            bounds set to GetGrids
         """
 
         bounds = self._get_bounds(bounds)
         self._bounds = bounds
-        return self._bounds
 
     def write_tempfile(self):
         with tempfile.NamedTemporaryFile(
