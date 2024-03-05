@@ -101,7 +101,8 @@ df.to_csv("samples.csv")
 ## Sample existing netcdf files
 If you have a directory with netcdf-files you can sample them into one DataFrame. You can slice the NetCDFs using a `start_date` and `end_date`.
 
-In the example below we take a set of Van der Sat soil-moisture as example. NeCDFs with one variable are stored in a directory with a variable name. So, netcdfs containing the variable `DRZSM-AMSR2-C1N-DESC-T10_V003_100` are stored in a directory with name `DRZSM-AMSR2-C1N-DESC-T10_V003_100`
+In the example below we take a set of Van der Sat soil-moisture as example. NeCDFs with one variable are stored in a directory with a variable name. 
+So, netcdfs containing the variable `DRZSM-AMSR2-C1N-DESC-T10_V003_100` are stored in a directory with name `DRZSM-AMSR2-C1N-DESC-T10_V003_100`
 
 ```
 from pathlib import Path
@@ -111,24 +112,37 @@ START_DATE = date(2015, 1, 1)
 END_DATE = date(2015, 1, 2)
 DIR = Path("path_to_netcdf_directory")
 
+LL_POINT = Point(119865,449665)
+UR_POINT = Point(127325,453565)
+OTHER_POINT = Point(135125,453394)
+POLYGON = box(LL_POINT.x, LL_POINT.y, UR_POINT.x, UR_POINT.y)
+GEOSERIES = GeoSeries(
+    [LL_POINT,
+     UR_POINT,
+     OTHER_POINT,
+     POLYGON],
+     index=["ll_point", "ur_point", "other_point", "polygon"],
+     crs=28992
+     )
+
 # get variables from directory names and take the first
 variables = [i.name for i in DIR.glob(r"*/")]
 variable = variables[0]
 
 # go to the directory with the variable
-dir = DIR.joinpath(variable)
+dir = DIR / variable 
 
 # sample all netcdf's in the directory over the variable
-df = sample_nc_dir(dir, variable, geoseries, start_date=START_DATE, end_date=END_DATE)
+df = sample_nc_dir(dir, variable, GEOSERIES, start_date=START_DATE, end_date=END_DATE)
 ```
 
 If you wish to specify a list of NetCDF files rather than a directory, you can use:
 
 ```
 nc_files = [
-    "DRZSM-AMSR2-C1N-DESC-T10_V003_100_2015-01-01T000000_4.040000_52.240000_5.600000_51.300000.nc",
-    "DRZSM-AMSR2-C1N-DESC-T10_V003_100_2015-01-02T000000_4.040000_52.240000_5.600000_51.300000.nc"
+    dir / "DRZSM-AMSR2-C1N-DESC-T10_V003_100_2015-01-01T000000_4.040000_52.240000_5.600000_51.300000.nc",  # must be pathlib.Path object
+    dir / "DRZSM-AMSR2-C1N-DESC-T10_V003_100_2015-01-02T000000_4.040000_52.240000_5.600000_51.300000.nc"  # must be pathlib.Path object
     ]
 
-df = sample_nc_dir(nc_files, variable, geoseries, start_date=START_DATE, end_date=END_DATE)
+df = sample_nc_dir(nc_files, variable, GEOSERIES, start_date=START_DATE, end_date=END_DATE)
 ```
