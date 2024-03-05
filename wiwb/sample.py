@@ -39,7 +39,7 @@ def sample_geoseries(
 
 
 def sample_netcdf(
-    nc_file: str,
+    nc_file: Path | str,
     variable_code: str,
     geometries: Union[List, GeoSeries],
     stats: Union[str, List[str]] = "mean",
@@ -51,7 +51,7 @@ def sample_netcdf(
 
     Parameters
     ----------
-    nc_file : str
+    nc_file : Path or str
         path to NetCDF file
     variable_code : str
         Variable in NetCDF file to sample
@@ -71,6 +71,10 @@ def sample_netcdf(
     pd.DataFrame
         Pandas DataFrame with statistics per timestamp per geometry
     """
+    if isinstance(nc_file, str)
+        nc_file = Path(str)
+    assert nc_file.is_file(), f"nc_file {nc_file} does not exist"
+    
     # read temp-source for sampling
     with xarray.open_dataset(nc_file, engine="netcdf4") as ds:
         if (start_date is not None) and (end_date is not None):
@@ -138,11 +142,9 @@ def sample_netcdfs(
     pd.DataFrame
         Pandas DataFrame with statistics per timestamp per geometry
     """
-
-    if len(nc_files) == 0:
-        raise FileNotFoundError(
-            f"directory {dir.absolute().resolve()} does not contain NetCDF files"
-        )
+    assert nc_files, f"no NetCDF files to sample"
+    for nc_file in nc_files:
+        assert nc_file.is_file(), f"nc_file {nc_file} does not exist"   
 
     # read all transforms to see if dataset is consistent
     transforms = list(
@@ -186,7 +188,7 @@ def sample_nc_dir(
 
     Parameters
     ----------
-    dir : Path | str
+    dir_path : Path | str
         Directory with netcdf files
     variable_code : str
         Variable in NetCDF file to sample
@@ -204,7 +206,11 @@ def sample_nc_dir(
     pd.DataFrame
         Pandas DataFrame with statistics per timestamp per geometry
     """
-    nc_files = list(Path(dir).glob("*.nc"))
+    if isinstance(dir_path, str):
+        dir_path = Path(dir_path)
+    assert dir_path.is_dir(), f"dir_path {dir_path} does not exist"
+    
+    nc_files = [x for x in dir_path.iterdir() if x.suffix == ".nc"]
 
     df = sample_netcdfs(
         nc_files,
