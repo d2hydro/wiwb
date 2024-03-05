@@ -73,6 +73,7 @@ def sample_netcdf(
     """
     if isinstance(nc_file, str)
         nc_file = Path(str)
+    assert nc_file.is_file(), f"nc_file {nc_file} does not exist"
     
     # read temp-source for sampling
     with xarray.open_dataset(nc_file, engine="netcdf4") as ds:
@@ -141,18 +142,16 @@ def sample_netcdfs(
     pd.DataFrame
         Pandas DataFrame with statistics per timestamp per geometry
     """
-
-    if len(nc_files) == 0:
-        raise FileNotFoundError(
-            f"directory {dir.absolute().resolve()} does not contain NetCDF files"
-        )
+    assert nc_files, f"no NetCDF files to sample"
+    for nc_file in nc_files:
+        assert nc_file.is_file(), f"nc_file {nc_file} does not exist"   
 
     # read all transforms to see if dataset is consistent
     transforms = list(
-        set(xarray.open_dataset(file).rio.transform() for file in nc_files)
+        set(xarray.open_dataset(file.as_posix()).rio.transform() for file in nc_files)
     )
     if len(transforms) == 1:
-        with xarray.open_dataset(nc_files[0], decode_coords="all") as ds:
+        with xarray.open_dataset(nc_files[0].as_posix(), decode_coords="all") as ds:
             geometries = geometries.to_crs(ds.rio.crs)
     else:
         raise ValueError(
@@ -189,7 +188,7 @@ def sample_nc_dir(
 
     Parameters
     ----------
-    dir : Path | str
+    dir_path : Path | str
         Directory with netcdf files
     variable_code : str
         Variable in NetCDF file to sample
@@ -207,7 +206,11 @@ def sample_nc_dir(
     pd.DataFrame
         Pandas DataFrame with statistics per timestamp per geometry
     """
-    nc_files = list(Path(dir).glob("*.nc"))
+    if isinstance(dir_path, str):
+        dir_path = Path(dir_path)
+    assert dir_path.is_dir(), f"dir_path {dir_path} does not exist"
+    
+    nc_files = [x for x in dir_path.iterdir() if x.suffix == ".nc"]
 
     df = sample_netcdfs(
         nc_files,
