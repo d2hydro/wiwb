@@ -39,7 +39,7 @@ def sample_geoseries(
 
 
 def sample_netcdf(
-    nc_file: str,
+    nc_file: Path | str,
     variable_code: str,
     geometries: Union[List, GeoSeries],
     stats: Union[str, List[str]] = "mean",
@@ -51,7 +51,7 @@ def sample_netcdf(
 
     Parameters
     ----------
-    nc_file : str
+    nc_file : Path or str
         path to NetCDF file
     variable_code : str
         Variable in NetCDF file to sample
@@ -71,6 +71,9 @@ def sample_netcdf(
     pd.DataFrame
         Pandas DataFrame with statistics per timestamp per geometry
     """
+    if isinstance(nc_file, str)
+        nc_file = Path(str)
+    
     # read temp-source for sampling
     with xarray.open_dataset(nc_file, engine="netcdf4") as ds:
         if (start_date is not None) and (end_date is not None):
