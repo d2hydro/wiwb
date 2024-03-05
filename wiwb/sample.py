@@ -148,10 +148,10 @@ def sample_netcdfs(
 
     # read all transforms to see if dataset is consistent
     transforms = list(
-        set(xarray.open_dataset(file.as_posix()).rio.transform() for file in nc_files)
+        set(xarray.open_dataset(file).rio.transform() for file in nc_files)
     )
     if len(transforms) == 1:
-        with xarray.open_dataset(nc_files[0].as_posix(), decode_coords="all") as ds:
+        with xarray.open_dataset(nc_files[0], decode_coords="all") as ds:
             geometries = geometries.to_crs(ds.rio.crs)
     else:
         raise ValueError(
