@@ -18,3 +18,4 @@ wiwb.egg-info/*
 *.cmd
 .pypirc.rc
 dist/wiwb-2024.2.0.tar.gz
+*.gz
