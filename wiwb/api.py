@@ -1,7 +1,9 @@
 from wiwb.auth import Auth
 from dataclasses import dataclass
 from typing import Union
-from wiwb import api_calls
+from wiwb.api_calls.get_data_sources import GetDataSources
+from wiwb.api_calls.get_variables import GetVariables
+from wiwb.api_calls.get_grids import GetGrids
 from wiwb.constants import API_URL
 
 
@@ -21,19 +23,13 @@ class Api:
             )
 
     def get_data_sources(self, **kwargs):
-        api_call = api_calls.GetDataSources(
-            base_url=self.base_url, auth=self.auth, **kwargs
-        )
+        api_call = GetDataSources(base_url=self.base_url, auth=self.auth, **kwargs)
         return api_call.run()
 
     def get_variables(self, **kwargs):
-        api_call = api_calls.GetVariables(
-            base_url=self.base_url, auth=self.auth, **kwargs
-        )
+        api_call = GetVariables(base_url=self.base_url, auth=self.auth, **kwargs)
         return api_call.run()
 
     def get_grids(self, **kwargs):
-        get_grids = api_calls.GetVariables(
-            base_url=self.base_url, auth=self.auth, **kwargs
-        )
+        get_grids = GetGrids(base_url=self.base_url, auth=self.auth, **kwargs)
         return get_grids
