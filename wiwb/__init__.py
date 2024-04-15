@@ -1,4 +1,4 @@
-__version__ = "2024.3.0"
+__version__ = "2024.4.0"
 from wiwb.api import Api
 from wiwb.auth import Auth
 import warnings
