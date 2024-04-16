@@ -1,7 +1,13 @@
 #cache
 *.pyc
-# visual studio code
+
+# Visual studio code
 .vscode/settings.json
+
+# Pycharm project files
+.DS_Store
+*.idea
+.idea/
 
 .ipynb_checkpoints
 # Byte-compiled / optimized / DLL files
