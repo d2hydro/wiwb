@@ -1,6 +1,11 @@
-2024.4.2 (Unreleased)
+2024.4.3 (Unreleased)
 ---------------------
 -
+
+2024.4.2 (2024-04-16)
+---------------------
+- Autoformat code with black and isort
+- Fix dependencies in dist
 
 2024.4.1 (2024-04-16)
 ---------------------

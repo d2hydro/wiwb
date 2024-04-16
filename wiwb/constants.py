@@ -1,8 +1,9 @@
 # %%
-from shapely.geometry import Point, Polygon, MultiPolygon, box
-from typing import Literal
-from geopandas import GeoSeries
 import os
+from typing import Literal
+
+from geopandas import GeoSeries
+from shapely.geometry import MultiPolygon, Point, Polygon, box
 
 API_URL = "https://wiwb.hydronet.com/api"
 AUTH_URL = (

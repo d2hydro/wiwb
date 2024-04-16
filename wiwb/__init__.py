@@ -1,7 +1,8 @@
-__version__ = "2024.4.1"
+__version__ = "2024.4.2"
+import warnings
+
 from wiwb.api import Api
 from wiwb.auth import Auth
-import warnings
 
 __all__ = ["Auth", "Api"]
 

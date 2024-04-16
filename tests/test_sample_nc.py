@@ -1,7 +1,7 @@
-from pathlib import Path
 from datetime import date
-from wiwb.sample import sample_nc_dir
+from pathlib import Path
 
+from wiwb.sample import sample_nc_dir
 
 START_DATE = date(2015, 1, 1)
 END_DATE = date(2015, 1, 2)

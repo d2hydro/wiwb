@@ -1,11 +1,12 @@
 """Authorization for the WIWB API"""
 
 from dataclasses import dataclass, field
-
+from datetime import UTC, datetime, timedelta
 from typing import Union
-from datetime import datetime, timedelta, UTC
+
 import jwt
 import requests
+
 from wiwb.constants import AUTH_URL, CLIENT_ID, CLIENT_SECRET
 
 
@@ -32,7 +33,7 @@ class Auth:
     --------
     from wiwb import Auth
 
-    >>> auth = Auth() # initalialize wiwb authorization
+    >>> auth = Auth() # initialize wiwb authorization
     >>> auth.token  # returns a valid token
     'eyJhbGciOiJS...............`
 
@@ -49,12 +50,14 @@ class Auth:
         # check if client_id and client_secret are valid
         if self.client_id is None:
             raise ValueError(
-                f"Invalid 'client_id': '{self.client_id}'. Provide at init or specify 'wiwb_client_id' as os environment variable"  # noqa:E501
+                f"Invalid 'client_id': '{self.client_id}'. "
+                f"Provide at init or specify 'wiwb_client_id' as os environment variable"  # noqa:E501
             )
 
         if self.client_secret is None:
             raise ValueError(
-                f"Invalid 'client_secret':  '{self.client_secret}'. Provide at init or specify 'wiwb_client_id' as os environment variable"  # noqa:E501
+                f"Invalid 'client_secret':  '{self.client_secret}'."
+                f"Provide at init or specify 'wiwb_client_id' as os environment variable"  # noqa:E501
             )
 
         # get a token to get started
@@ -85,7 +88,7 @@ class Auth:
             "Authorization": "Bearer " + self.token,
         }
 
-    def _get_token(self) -> str:
+    def _get_token(self) -> None:
         """Get, and store, a fresh WIWB access token"""
         response = requests.post(
             self.url,

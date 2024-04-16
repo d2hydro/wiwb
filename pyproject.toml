@@ -16,10 +16,13 @@ requires-python = ">3.7,<=3.12"
 dependencies = [
     "geopandas",
     "pyjwt",
+    "netcdf4",
     "xarray",
     "rasterio",
+    "rasterstats",
     "requests",
-    "netcdf4"
+    "affine",
+    "rioxarray"
 ]
 dynamic = ["version"]
 
