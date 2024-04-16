@@ -1,10 +1,12 @@
 # %%
+from pathlib import Path
+
+import pandas as pd
 import pytest
-from wiwb import Auth, Api
 from geopandas import GeoSeries
 from pandas import DataFrame
-from pathlib import Path
-import pandas as pd
+
+from wiwb import Api, Auth
 from wiwb.constants import GEOSERIES, get_defaults
 
 DIR = Path(__file__).parent.joinpath("data")

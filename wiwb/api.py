@@ -1,9 +1,10 @@
-from wiwb.auth import Auth
 from dataclasses import dataclass
 from typing import Union
+
 from wiwb.api_calls.get_data_sources import GetDataSources
-from wiwb.api_calls.get_variables import GetVariables
 from wiwb.api_calls.get_grids import GetGrids
+from wiwb.api_calls.get_variables import GetVariables
+from wiwb.auth import Auth
 from wiwb.constants import API_URL
 
 

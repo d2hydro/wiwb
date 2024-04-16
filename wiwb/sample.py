@@ -1,13 +1,14 @@
+from datetime import date
+from pathlib import Path
+from typing import List, Union
+
 import numpy as np
+import pandas as pd
+import xarray
+from affine import Affine
+from geopandas import GeoSeries
 from numpy import ndarray
 from rasterstats import zonal_stats
-from geopandas import GeoSeries
-from affine import Affine
-from typing import List, Union
-import xarray
-import pandas as pd
-from pathlib import Path
-from datetime import date
 
 
 def flatten_stats(stats_dict: List[str], stats: List[str]) -> List[float]:

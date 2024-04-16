@@ -1,8 +1,10 @@
-import requests
 import logging
-from typing import Dict
-from wiwb.api_calls import Request
 from dataclasses import dataclass, field
+from typing import Dict
+
+import requests
+
+from wiwb.api_calls import Request
 from wiwb.constants import PRIMARY_STRUCTURE_TYPES
 
 logger = logging.getLogger(__name__)

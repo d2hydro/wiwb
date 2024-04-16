@@ -1,7 +1,9 @@
 # %%
-from wiwb.api_calls import GetGrids
 from datetime import date
+
 import pytest
+
+from wiwb.api_calls import GetGrids
 
 
 def test_grids(auth, api, tmp_path, geoseries, grids_df):

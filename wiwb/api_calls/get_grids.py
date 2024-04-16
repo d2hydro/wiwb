@@ -1,23 +1,25 @@
 import logging
-from wiwb.api_calls import Request
-from dataclasses import dataclass, field, InitVar
-from typing import Iterable, List, Tuple, Union, Optional
-from geopandas import GeoSeries
-from pandas import DataFrame
-from shapely.geometry import Point, Polygon, MultiPolygon
+import tempfile
+from dataclasses import InitVar, dataclass, field
 from datetime import date
-from wiwb.converters import snake_to_pascal_case
+from pathlib import Path
+from typing import Iterable, List, Optional, Tuple, Union
+
 import pyproj
 import requests
-from wiwb.sample import sample_netcdf
-from pathlib import Path
-import tempfile
+from geopandas import GeoSeries
+from pandas import DataFrame
+from shapely.geometry import MultiPolygon, Point, Polygon
+
+from wiwb.api_calls import Request
 from wiwb.constants import (
-    get_defaults,
-    FILE_SUFFICES,
     DATA_FORMAT_CODES,
+    FILE_SUFFICES,
     INTERVAL_TYPES,
+    get_defaults,
 )
+from wiwb.converters import snake_to_pascal_case
+from wiwb.sample import sample_netcdf
 
 logger = logging.getLogger(__name__)
 defaults = get_defaults()

@@ -1,9 +1,10 @@
 import logging
-from typing import List
-import requests
-from wiwb.api_calls import Request
 from dataclasses import dataclass, field
+from typing import List
 
+import requests
+
+from wiwb.api_calls import Request
 
 logger = logging.getLogger(__name__)
 
