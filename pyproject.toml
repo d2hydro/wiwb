@@ -37,7 +37,7 @@ zip-safe = true
 version = { attr = "wiwb.__version__" }
 
 [tool.setuptools.packages.find]
-include = ["wiwb"]
+include = ["wiwb", "wiwb.*"]
 
 [project.urls]
 Source = "https://github.com/d2hydro/wiwb"
