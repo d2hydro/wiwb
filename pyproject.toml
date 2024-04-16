@@ -8,7 +8,7 @@ description = "Python API to work with WIWB"
 readme = "README.md"
 authors = [
     { name = "Daniel Tollenaar", email = "daniel@d2hydro.nl" },
-	{ name = "Renier Kramer", email = "renier.Kramer@hdsr.nl" }
+	{ name = "Renier Kramer", email = "renier.kramer@hdsr.nl" }
 ]
 license = { text = "MIT" }
 
