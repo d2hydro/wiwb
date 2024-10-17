@@ -160,6 +160,8 @@ class ReaderSettings:
         Reader start_date
     end_date: datetime.date
         Reader end_date
+    model_date: datetime.date
+        Reader end_date
     variable_codes: List[str]
         List of WIWB variable codes
     interval: Interval
@@ -171,6 +173,7 @@ class ReaderSettings:
     start_date: date
     end_date: date
     variable_codes: list
+    model_date: Union[date | None] = None
     interval: Union[Interval, None] = None
     extent: Union[Extent, None] = field(default_factory=Extent)
 
@@ -178,9 +181,11 @@ class ReaderSettings:
         dict = self.__dict__.copy()
         dict["start_date"] = dict["start_date"].strftime("%Y%m%d%H%M%S")
         dict["end_date"] = dict["end_date"].strftime("%Y%m%d%H%M%S")
-        for k in ["interval", "extent"]:
+        for k in ["interval", "extent", "model_date"]:
             if dict[k] is None:
                 dict.pop(k)
+            elif k == "model_date":
+                dict[k] = dict["model_date"].strftime("%Y%m%d%H%M%S")
             else:
                 dict[k] = dict[k].json()
 
@@ -262,12 +267,15 @@ class RequestBody:
     """GetGrids request Body"""
 
     readers: List[Reader]
-    exporter: Exporter
+    exporter: Union[Exporter, None] = None
 
     def json(self):
         dict = self.__dict__.copy()
         dict["readers"] = [i.json() for i in dict["readers"]]
-        dict["exporter"] = dict["exporter"].json()
+        if dict["exporter"] is None:
+            dict.pop("exporter")
+        else:
+            dict["exporter"] = dict["exporter"].json()
         return {snake_to_pascal_case(k): v for k, v in dict.items()}
 
 
