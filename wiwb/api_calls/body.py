@@ -176,11 +176,11 @@ class ReaderSettings:
     """
 
     variable_codes: list
-    start_date: Union[date | None] = None
-    end_date: Union[date | None] = None
-    model_run: Union[datetime | None | str] = None
-    location_codes: Union[list | None] = None
-    model_date: Union[date | None] = None
+    start_date: Union[date, None] = None
+    end_date: Union[date, None] = None
+    model_run: Union[datetime, None, str] = None
+    location_codes: Union[list, None] = None
+    model_date: Union[date, None] = None
     interval: Union[Interval, None] = None
     extent: Union[Extent, None] = None
     structure_type: Union[str, None] = None

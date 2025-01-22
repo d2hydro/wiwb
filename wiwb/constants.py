@@ -4,6 +4,7 @@ from typing import Literal
 
 from geopandas import GeoSeries
 from shapely.geometry import MultiPolygon, Point, Polygon, box
+import sys
 
 API_URL = "https://wiwb.hydronet.com/api"
 AUTH_URL = (
@@ -12,6 +13,8 @@ AUTH_URL = (
 
 CLIENT_ID = os.getenv("wiwb_client_id")
 CLIENT_SECRET = os.getenv("wiwb_client_secret")
+
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
 FILE_SUFFICES = {
     "geotiff": "zip",
@@ -31,7 +34,7 @@ PRIMARY_STRUCTURE_TYPES = Literal[
     "TimeSeries",
 ]
 
-DATA_FORMAT_CODES = Literal[*FILE_SUFFICES.keys(), "hydronet.csv.simple", "hydronet.csv.simple", "json"]
+DATA_FORMAT_CODES = Literal["geotiff", "aaigrid", "hdf5", "netcdf4.cf1p6", "netcdf4.cf1p6.zip", "hydronet.csv.simple", "hydronet.csv.simple", "json"]
 
 IMPLEMENTED_GEOMETRY_TYPES = [Point, Polygon, MultiPolygon]
 

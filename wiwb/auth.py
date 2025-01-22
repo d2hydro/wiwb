@@ -1,13 +1,18 @@
 """Authorization for the WIWB API"""
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
 from typing import Union
 
 import jwt
 import requests
 
 from wiwb.constants import AUTH_URL, CLIENT_ID, CLIENT_SECRET
+
+try:
+    from datetime import datetime, timedelta, UTC
+except ImportError: # support Python 3.9
+    from datetime import datetime, timezone, timedelta
+    UTC = timezone.utc
 
 
 @dataclass

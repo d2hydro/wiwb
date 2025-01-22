@@ -5,6 +5,7 @@ import pytest
 
 from wiwb.api_calls import GetGrids
 
+from wiwb import Api, Auth
 
 def test_grids(auth, api, tmp_path, geoseries, grids_df):
     """

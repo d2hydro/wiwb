@@ -1,0 +1,20 @@
+channels:
+  - conda-forge
+
+dependencies:
+  - python==3.13
+  - requests
+  - geopandas
+  - black
+  - ipykernel
+  - pandas
+  - pyjwt
+  - pytest
+  - pytest-cov
+  - netcdf4
+  - rasterstats
+  - rasterio
+  - setuptools
+  - xarray
+  - rioxarray
+  - twine

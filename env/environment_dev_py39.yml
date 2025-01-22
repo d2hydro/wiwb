@@ -2,12 +2,12 @@ channels:
   - conda-forge
 
 dependencies:
-  - python<=3.12
+  - python==3.9
   - requests
-  - geopandas
+  - geopandas==0.14
   - black
   - ipykernel
-  - pandas
+  - pandas==2.0
   - pyjwt
   - pytest
   - pytest-cov

@@ -36,9 +36,9 @@ class GetGrids(Request):
     unzip: bool = True
     interval: Tuple[str, int] = ("Hours", 1)
     data_format_code: DATA_FORMAT_CODES = "geotiff"
-    geometries: InitVar[
-        GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]] | None
-    ] = None
+    geometries: InitVar[Union[
+        GeoSeries, Iterable[Union[Point, Polygon, MultiPolygon]], None
+    ]] = None
     bounds: InitVar[Union[Tuple[float, float, float, float], None]] = defaults.bounds
 
     _response: Union[requests.Response, None] = field(
@@ -64,9 +64,9 @@ class GetGrids(Request):
     @property
     def body(self) -> RequestBody:
         reader_settings = ReaderSettings(
-            self.start_date,
-            self.end_date,
-            [self.variable_code],
+            start_date=self.start_date,
+            end_date=self.end_date,
+            variable_codes=[self.variable_code],
             interval=Interval(*self.interval),
             extent=Extent(*self.bounds),
         )
@@ -104,7 +104,7 @@ class GetGrids(Request):
 
     def _to_geoseries(
         self,
-        geometries: Optional[GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]],
+        geometries: Optional[Union[GeoSeries, Iterable[Union[Point, Polygon, MultiPolygon]]]],
     ) -> GeoSeries:
 
         # convert iterable to GeoSeries
@@ -161,14 +161,14 @@ class GetGrids(Request):
 
     def set_geometries(
         self,
-        geometries: Optional[GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]],
+        geometries: Optional[Union[GeoSeries, Iterable[Union[Point, Polygon, MultiPolygon]]]],
     ) -> None:
         """Set a list or GeoSeries with Point, Polygon or MultiPolygon values. Handles conversion to
         GeoSeries and reprojection
 
         Parameters
         ----------
-        geometries : GeoSeries | Iterable[Union[Point, Polygon, MultiPolygon]]
+        geometries : GeoSeries, Iterable[Union[Point, Polygon, MultiPolygon]]
             A list or GeoSeries with Point, Polygon and Multipolygon objects
         """
         if geometries is not None:
@@ -198,12 +198,12 @@ class GetGrids(Request):
             tmp_file.write(self._response.content)
         return tmp_file_path
 
-    def sample(self, stats: str | List[str] = "mean") -> DataFrame:
+    def sample(self, stats: Union[str, List[str]] = "mean") -> DataFrame:
         """Sample statistics per geometry
 
         Parameters
         ----------
-        stats : str | List[str]
+        stats : Union[str, List[str]]
             statistics to sample, provided as list of statistics or a string with one statistic. defaults to mean
 
             All stats in rasterstats.zonal_stats are available: https://pythonhosted.org/rasterstats/manual.html#statistics
