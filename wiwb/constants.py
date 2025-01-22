@@ -31,11 +31,11 @@ PRIMARY_STRUCTURE_TYPES = Literal[
     "TimeSeries",
 ]
 
-DATA_FORMAT_CODES = Literal[*FILE_SUFFICES.keys()]
+DATA_FORMAT_CODES = Literal[*FILE_SUFFICES.keys(), "hydronet.csv.simple", "hydronet.csv.simple", "json"]
 
 IMPLEMENTED_GEOMETRY_TYPES = [Point, Polygon, MultiPolygon]
 
-INTERVAL_TYPES = Literal["Days", "Hours", "Minutes"]
+INTERVAL_TYPES = Literal["Days", "Hours", "Minutes", "None"]
 
 CRS_EPSG = 28992
 LL_POINT = Point(119865, 449665)
