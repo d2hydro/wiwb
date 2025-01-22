@@ -9,6 +9,7 @@ from affine import Affine
 from geopandas import GeoSeries
 from numpy import ndarray
 from rasterstats import zonal_stats
+from typing import Union
 
 
 def flatten_stats(stats_dict: List[str], stats: List[str]) -> List[float]:
@@ -40,12 +41,12 @@ def sample_geoseries(
 
 
 def sample_netcdf(
-    nc_file: Path | str,
+    nc_file: Union[Path, str],
     variable_code: str,
     geometries: Union[List, GeoSeries],
     stats: Union[str, List[str]] = "mean",
-    start_date: date | None = None,
-    end_date: date | None = None,
+    start_date: Union[date, None] = None,
+    end_date: Union[date, None] = None,
     unlink: bool = False,
 ) -> pd.DataFrame:
     """Sample a set of geometries over a netcdf file
@@ -60,9 +61,9 @@ def sample_netcdf(
         geometries to sample
     stats : List[str]
         statistics to sample
-    start_date : date | None
+    start_date : Union[date, None]
         start date for selection, by default None
-    end_date: date | None
+    end_date: Union[date, None]
         end date for selection, by default None
     unlink : bool, optional
         option to delete netcdf-file after sampling, by default False
@@ -80,7 +81,7 @@ def sample_netcdf(
     with xarray.open_dataset(nc_file, engine="netcdf4") as ds:
         if (start_date is not None) and (end_date is not None):
             ds = ds.sel(time=slice(start_date, end_date))
-        nodata = ds[variable_code].attrs.get("_FillValue")
+        nodata =  ds[variable_code].encoding.get("_FillValue", None)
         affine = ds.rio.transform()
         data = {
             time: sample_geoseries(
@@ -118,8 +119,8 @@ def sample_netcdfs(
     variable_code: str,
     geometries: Union[List, GeoSeries],
     stats: Union[str, List[str]] = "mean",
-    start_date: date | None = None,
-    end_date: date | None = None,
+    start_date: Union[date, None] = None,
+    end_date: Union[date, None] = None,
 ):
     """Sample over a set of netcdf-files
 
@@ -133,9 +134,9 @@ def sample_netcdfs(
         geometries to sample
     stats : List[str]
         statistics to sample
-    start_date : date | None
+    start_date : Union[date, None]
         start date for selection, by default None
-    end_date: date | None
+    end_date: Union[date, None]
         end date for selection, by default None
 
     Returns
@@ -178,18 +179,18 @@ def sample_netcdfs(
 
 
 def sample_nc_dir(
-    dir_path: Path | str,
+    dir_path: Union[Path, str],
     variable_code: str,
     geometries: Union[List, GeoSeries],
     stats: Union[str, List[str]] = "mean",
-    start_date: date | None = None,
-    end_date: date | None = None,
+    start_date: Union[date, None] = None,
+    end_date: Union[date, None] = None,
 ):
     """Sample over a directory of netcdf-files
 
     Parameters
     ----------
-    dir_path : Path | str
+    dir_path : Union[Path, str]
         Directory with netcdf files
     variable_code : str
         Variable in NetCDF file to sample
@@ -197,9 +198,9 @@ def sample_nc_dir(
         geometries to sample
     stats : List[str]
         statistics to sample
-    start_date : date | None
+    start_date : Union[date, None]
         start date for selection, by default None
-    end_date: date | None
+    end_date: Union[date, None]
         end date for selection, by default None
 
     Returns
