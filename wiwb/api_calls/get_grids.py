@@ -12,6 +12,7 @@ from pandas import DataFrame
 from shapely.geometry import MultiPolygon, Point, Polygon
 
 from wiwb.api_calls import Request
+from wiwb.auth import Auth
 from wiwb.api_calls.body import RequestBody, ReaderSettings, Interval, Extent, Exporter, Reader
 from wiwb.constants import (
     DATA_FORMAT_CODES,
@@ -19,37 +20,52 @@ from wiwb.constants import (
     INTERVAL_TYPES,
     get_defaults,
 )
-from wiwb.converters import snake_to_pascal_case
+from wiwb.converters import rename_file
 from wiwb.sample import sample_netcdf
+import zipfile
 
 logger = logging.getLogger(__name__)
 defaults = get_defaults()
 
-@dataclass
+# @dataclass
 class GetGrids(Request):
     """GetGrids request"""
 
-    data_source_code: str
-    variable_code: str
-    start_date: date
-    end_date: date
-    unzip: bool = True
-    interval: Tuple[str, int] = ("Hours", 1)
-    data_format_code: DATA_FORMAT_CODES = "geotiff"
-    geometries: InitVar[Union[
-        GeoSeries, Iterable[Union[Point, Polygon, MultiPolygon]], None
-    ]] = None
-    bounds: InitVar[Union[Tuple[float, float, float, float], None]] = defaults.bounds
+    def __init__(
+            self,
+            auth: Auth,
+            base_url: str,
+            data_source_code: str,
+            variable_code:str,
+            start_date: date,
+            end_date:date,
+            unzip: bool=True,
+            interval:Tuple[str, int] = ("Hours", 1),
+            data_format_code: DATA_FORMAT_CODES = "geotiff",
+            geometries: Union[GeoSeries, Iterable[Union[Point, Polygon, MultiPolygon]] | None] = None,
+            bounds: Union[Tuple[float, float, float, float] |  None] = None
+            ):
 
-    _response: Union[requests.Response, None] = field(
-        init=False, default=None, repr=False
-    )
-    _geoseries: int = field(init=False, default=None)
-    _bounds: Union[Tuple[float, float, float, float], None] = field(
-        init=False, default=None
-    )
+        # init from Requests class
+        super().__init__(auth=auth, base_url=base_url)
+    
+        # GetGrids fields
+        self.data_source_code: str = data_source_code
+        self.variable_code:str = variable_code
+        self.start_date: date = start_date
+        self.end_date:date = end_date
+        self.unzip: bool = unzip
+        self.interval:Tuple[str, int] = interval
+        self.data_format_code: DATA_FORMAT_CODES = data_format_code
 
-    def __post_init__(self, geometries, bounds):
+        # hidden variables
+        self._response: Union[requests.Response, None] = None
+        self._geoseries: Union[GeoSeries, None] = None
+        self._bounds: Union[Tuple[float, float, float, float], None] = field(
+            init=False, default=None
+        )
+
+        # Set geometries and calculate bounds
         self.set_geometries(geometries)
         self.set_bounds(bounds)
 
@@ -87,8 +103,8 @@ class GetGrids(Request):
             [
                 self.data_source_code,
                 self.variable_code,
-                self.start_date.isoformat(),
-                self.end_date.isoformat(),
+                self.start_date.strftime('%Y%m%dT%H%M%S'),
+                self.end_date.strftime('%Y%m%dT%H%M%S'),
             ]
         )
         suffix = FILE_SUFFICES[self.data_format_code]
@@ -101,6 +117,10 @@ class GetGrids(Request):
     @property
     def url_post_fix(self) -> str:
         return "grids/get"
+    
+    @property
+    def bounds(self) -> Tuple[float, float, float, float]:
+        return self._get_bounds(self._bounds)
 
     def _to_geoseries(
         self,
@@ -177,7 +197,7 @@ class GetGrids(Request):
         else:
             self._geoseries = geometries
 
-    def set_bounds(self, bounds: Tuple[float, float, float, float]) -> None:
+    def set_bounds(self, bounds: Tuple[float, float, float, float] | None) -> None:
         """Set new bounds values. Fits bounds to geoseries.bounds
 
         Parameters
@@ -247,12 +267,36 @@ class GetGrids(Request):
 
         return df
 
-    def to_directory(self, output_dir: Union[str, Path]):
+    def to_directory(self, output_dir: Union[str, Path], unzip:bool=False, rename_map:dict| None = None):
         """Write response.content to an output-file"""
         if self._response is None:
             self.run()
 
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
-        output_file = output_dir / self.file_name
-        output_file.write_bytes(self._response.content)
+        if unzip:
+
+            # write content in temp_file
+            temp_file = self.write_tempfile()
+
+            with zipfile.ZipFile(temp_file, "r") as zf:
+                for info in zf.infolist():
+                    if info.is_dir():
+                        continue
+
+                    file_name = info.filename
+                    if rename_map is not None:
+                        file_name= output_dir / rename_file(file_name, **rename_map)
+                    target = output_dir / file_name
+
+                    # Schrijf binaire inhoud veilig weg
+                    with zf.open(info, "r") as src, open(target, "wb") as dst:
+                        while True:
+                            chunk = src.read(1024 * 1024)
+                            if not chunk:
+                                break
+                            dst.write(chunk)
+
+        else:
+            output_file = output_dir / self.file_name
+            output_file.write_bytes(self._response.content)
