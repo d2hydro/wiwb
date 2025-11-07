@@ -1,4 +1,4 @@
-__version__ = "2025.1.0"
+__version__ = "2025.11.0"
 import warnings
 
 from wiwb.api import Api
