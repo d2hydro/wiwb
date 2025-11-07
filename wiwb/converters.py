@@ -9,7 +9,7 @@ def snake_to_pascal_case(snake_case: str) -> str:
     return "".join(i.title() for i in words)
 
 
-def rename_file(file_name: Path, prefix:str, use: str = "start", datetime_pattern: str = "%Y%m%d%H"):
+def rename_file(file_name: Path, prefix:str, use: str = "start", datetime_pattern: str = "%Y%m%d%H%M"):
     """Rename a WIWB output file to a different datetime pattern"""
     file_name = Path(file_name)
     _, _, start_str, end_str = file_name.stem.split("_")
